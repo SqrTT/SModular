@@ -1,0 +1,22 @@
+{
+  "name": "smodular",
+  "version": "0.0.1",
+  "homepage": "https://github.com/SqrTT/smodular",
+  "authors": [
+    "SqrTT <tolik@sqrtt.pro>"
+  ],
+  "main": "smodular.js",
+  "keywords": [
+    "amd",
+    "lmd",
+    "modules"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
