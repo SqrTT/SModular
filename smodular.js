@@ -65,6 +65,11 @@ var define;
 
 	if (!global.define) {
 		global.define = function define(moduleName, factory) {
+			if (!factory && typeof moduleName === 'function') { //fallback for AMD
+				var fn = moduleName();
+				registredModules[fn.name] = {factory : moduleName, name: fn.name};
+				return;
+			}
 			registredModules[moduleName] = {factory : factory, name: moduleName};
 			if (moduleName.indexOf(APP) === 0) {
 				var names = moduleName.split(SPLITTER),
@@ -92,7 +97,7 @@ define('document', function (require, exports, module) {
 	module.exports = require('window').document;
 });
 define('$', function (require, exports, module) {
-	module.exports = require('jquery');
+	module.exports = require('jQuery');
 });
 define('$doc', function (require, exports, module) {
 	module.exports = require('$')(require('document'));
@@ -108,4 +113,13 @@ define('console', function (require, exports, module) {
 });
 define('gevent', function (require, exports, module) {
 	module.exports = require('$doc');
+});
+// jQuery don't support AMD
+define('jQuery', function (require, exports, module) {
+	var window = require('window');
+	if (window.jQuery) {
+		module.exports = window.jQuery;
+	} else {
+		throw "jQuery is undefined!";
+	}
 });
