@@ -2,6 +2,7 @@
 var define;
 (function (global, undefined) {
 	var modules = {},
+		document = global.document,
 		registredModules = {},
 		ASTERISK = '*',
 		APP = 'app.',
@@ -19,6 +20,26 @@ var define;
 			return modulesMap[ASTERISK][reqName];
 		}
 		return reqName;
+	}
+
+	function getCurrentName() {
+		var fileSrc,
+			reg = /\/([\w\.]+?)\.js/ig,
+			m,
+			scripts;
+
+		if (document.currentScript) {
+			fileSrc = document.currentScript.src;
+		} else {
+			scripts = document.getElementsByTagName('script');
+			fileSrc = scripts[scripts.length-1].src;
+		}
+		m = reg.exec(fileSrc);
+		if (m && m[1]) {
+			return m[1];
+		} else {
+			throw 'Can\'n detect module name';
+		}
 	}
 
 	function require(name) {
@@ -65,10 +86,12 @@ var define;
 
 	if (!global.define) {
 		global.define = function define(moduleName, factory) {
-			if (!factory && typeof moduleName === 'function') { //fallback for AMD
-				var fn = moduleName();
-				registredModules[fn.name] = {factory : moduleName, name: fn.name};
-				return;
+			if (!factory && typeof moduleName === 'function') { //anonymous fallback for AMD
+				factory = moduleName;
+				moduleName = getCurrentName();
+			}
+			if (registredModules[moduleName]) {
+				throw 'Module already defined: ' + moduleName;
 			}
 			registredModules[moduleName] = {factory : factory, name: moduleName};
 			if (moduleName.indexOf(APP) === 0) {
