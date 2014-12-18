@@ -6,7 +6,7 @@ Simple module for JavaScript. Supports AMD modules and CommonJS modules with wra
 
 Exapmles
 --------
-If module starts with name 'app.' then it will be inited imedantly and exported to global variable.
+If module starts with name 'app.' then it will be inited imedantly and exported to global variable in other case module will not be global but still can by required by other module.
 
 Exapmle of module:
 ``` javascript
