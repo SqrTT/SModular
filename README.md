@@ -55,3 +55,4 @@ There is other way to define module. Module can be anomymous. In that case modul
 ```
 
 If you concate all files to one, plese use some additional tool like *gulp-order* to difine correct order.
+SModular will not load moule automaticly you shoud do it manualy and of course in right order.
