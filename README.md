@@ -52,5 +52,6 @@ There is other way to define module. Module can be anomymous. In that case modul
 		return 2 + nicemodule(3);
 	};
  });
+```
 
 If you concate all files to one, plese use some additional tool like *gulp-order* to difine correct order.
