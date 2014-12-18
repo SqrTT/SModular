@@ -42,12 +42,23 @@ var define;
 		}
 	}
 
-	function require(name) {
+	function require(name, callback) {
 		var module,
 			names,
 			current,
 			i,
 			returnExport;
+
+		if (typeof name !== 'string' && name.length) {
+			returnExport = [];
+			for(i = 0; i < name.length; i++) {
+				returnExport.push(require(name[i]));
+			}
+			if (callback) {
+				callback.apply(callback, returnExport);
+			}
+			return returnExport;
+		}
 
 		name = mapModuleName((requires.length && requires[requires.length - 1]), name);
 		if (!registredModules[name] && name.indexOf(APP) === 0) {
