@@ -1,9 +1,25 @@
 'use strict';
 var through = require('through2'),
-	PluginError = require('gulp-util/lib/PluginError');
+	PluginError = require('gulp-util/lib/PluginError'),
+	pluginName = 'smodular';
 
 function process(file, options) {
+	var regName = /\/([\w]+?)\..+?$/ig,
+		libName,
+		m,
+		data;
 
+	m = regName.exec(file.path);
+	if (m && m[1]) {
+			libName = m[1];
+	} else {
+			throw 'Can\'n detect module name';
+	}
+
+	var data = String(file.contents);
+	data = data.replace(/define\s*?\(\s*?(function|factory)/igm, 'define(\'' + libName + '\', $1');
+
+	return new Buffer(data);
 }
 
 
@@ -28,7 +44,6 @@ function createError(file, err) {
 module.exports = function(opt) {
 
 	return through.obj(function (file, encoding, callback) {
-		var options = setup(opt);
 
 		if (file.isNull()) {
 			return callback(null, file);
@@ -38,10 +53,10 @@ module.exports = function(opt) {
 			return callback(createError(file, 'Streaming not supported'));
 		}
 
-		var done = process(file, options);
+		var done = process(file);
 
 		if (done instanceof PluginError) {
-			return callback(mangled);
+			return callback(done);
 		}
 
 		file.contents = done;
