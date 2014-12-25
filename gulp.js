@@ -17,7 +17,7 @@ function process(file, options) {
 	}
 
 	var data = String(file.contents);
-	data = data.replace(/define\s*?\(\s*?(function|factory)/igm, 'define(\'' + libName + '\', $1');
+	data = data.replace(/define\s*?\(\s*?(function|factory|\[)/igm, 'define(\'' + libName + '\', $1');
 
 	return new Buffer(data);
 }
