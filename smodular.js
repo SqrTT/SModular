@@ -38,12 +38,12 @@ var define;
 		if (m && m[1]) {
 			return m[1];
 		} else {
-			throw 'Can\'n detect module name';
+			throw new Error('Can\'n detect module name');
 		}
 	}
 
 	function require(name, callback) {
-		var module,
+		var currModule,
 			names,
 			current,
 			i,
@@ -69,7 +69,7 @@ var define;
 				if (current[names[i]] !== undefined) {
 					current = current[names[i]];
 				} else {
-					throw NOT_FOUND + name;
+					throw new Error(NOT_FOUND + name);
 				}
 			}
 			return current;
@@ -80,10 +80,10 @@ var define;
 				throw 'Loop detected: ' + requires + '->' + name;
 			} else {
 				requires.push(name);
-				module = {exports : {}, name : name};
-				returnExport = registredModules[name].factory.call(module.exports, require, module.exports, module);
+				currModule = {exports : {}, name : name};
+				returnExport = registredModules[name].factory.call(currModule.exports, require, currModule.exports, currModule);
 				if (returnExport === undefined) {
-					modules[name] = module.exports;
+					modules[name] = currModule.exports;
 				} else {
 					modules[name] = returnExport;
 				}
@@ -96,13 +96,20 @@ var define;
 	}
 
 	if (!global.define) {
-		global.define = function define(moduleName, factory) {
+		global.define = function define(moduleName, factory, pseudoFactory) {
 			if (!factory && typeof moduleName === 'function') { //anonymous fallback for AMD
 				factory = moduleName;
 				moduleName = getCurrentName();
 			}
+			if (typeof pseudoFactory === 'function') {
+				if (factory.length === 0) {
+					factory = pseudoFactory;
+				} else {
+					throw new Error('Supported only CommonJS way definition');
+				}
+			}
 			if (registredModules[moduleName]) {
-				throw 'Module already defined: ' + moduleName;
+				throw new Error('Module already defined: ' + moduleName);
 			}
 			registredModules[moduleName] = {factory : factory, name: moduleName};
 			if (moduleName.indexOf(APP) === 0) {
@@ -123,4 +130,3 @@ var define;
 		global.define.amd = {};// look alike AMD
 	}
 }(this));
-
