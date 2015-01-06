@@ -49,7 +49,7 @@ var define;
 			i,
 			returnExport;
 
-		if (typeof name !== 'string' && name.length) {
+		if ('object' === typeof name) {
 			returnExport = [];
 			for(i = 0; i < name.length; i++) {
 				returnExport.push(require(name[i]));
