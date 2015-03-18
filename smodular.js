@@ -32,18 +32,19 @@ var define;
 			fileSrc = document.currentScript.src;
 		} else {
 			scripts = document.getElementsByTagName('script');
-			fileSrc = scripts[scripts.length-1].src;
+			fileSrc = scripts[scripts.length - 1].src;
 		}
 		m = reg.exec(fileSrc);
 		if (m && m[1]) {
 			return m[1];
 		} else {
-			throw new Error('Can\'n detect module name');
+			throw new Error('Can\'t detect module name');
 		}
 	}
 
 	function require(name, callback) {
 		var currModule,
+			reqModules,
 			names,
 			current,
 			i,
@@ -51,7 +52,7 @@ var define;
 
 		if ('object' === typeof name) {
 			returnExport = [];
-			for(i = 0; i < name.length; i++) {
+			for (i = 0; i < name.length; i++) {
 				returnExport.push(require(name[i]));
 			}
 			if (callback) {
@@ -81,7 +82,14 @@ var define;
 			} else {
 				requires.push(name);
 				currModule = {exports : {}, name : name};
-				returnExport = registredModules[name].factory.call(currModule.exports, require, currModule.exports, currModule);
+				if (registredModules[name].requireModules) {
+					reqModules = require(registredModules[name].requireModules);
+					returnExport = registredModules[name].factory.apply(
+							currModule.exports, reqModules);
+				} else {
+					returnExport = registredModules[name].factory.call(
+							currModule.exports, require, currModule.exports, currModule);
+				}
 				if (returnExport === undefined) {
 					modules[name] = currModule.exports;
 				} else {
@@ -97,21 +105,19 @@ var define;
 
 	if (!global.define) {
 		global.define = function define(moduleName, factory, pseudoFactory) {
-			if (!factory && typeof moduleName === 'function') { //anonymous fallback for AMD
-				factory = moduleName;
-				moduleName = getCurrentName();
-			}
-			if (typeof pseudoFactory === 'function') {
-				if (factory.length === 0) {
-					factory = pseudoFactory;
-				} else {
-					throw new Error('Supported only CommonJS way definition');
-				}
+			if (typeof moduleName !== 'string') {
+				throw new Error('Module can by defined only witn name');
 			}
 			if (registredModules[moduleName]) {
 				throw new Error('Module already defined: ' + moduleName);
 			}
 			registredModules[moduleName] = {factory : factory, name: moduleName};
+			if (typeof pseudoFactory === 'function') {
+				registredModules[moduleName].requireModules = factory;
+				registredModules[moduleName].factory = pseudoFactory;
+				require(moduleName);
+			}
+
 			if (moduleName.indexOf(APP) === 0) {
 				var names = moduleName.split(SPLITTER),
 					current = global,
@@ -130,3 +136,5 @@ var define;
 		global.define.amd = {};// look alike AMD
 	}
 }(this));
+
+
