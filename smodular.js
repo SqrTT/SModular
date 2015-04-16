@@ -1,5 +1,4 @@
 // define/require part
-var define;
 (function (global, undefined) {
 	var modules = {},
 		document = global.document,
@@ -20,26 +19,6 @@ var define;
 			return modulesMap[ASTERISK][reqName];
 		}
 		return reqName;
-	}
-
-	function getCurrentName() {
-		var fileSrc,
-			reg = /\/([\w\.]+?)\.js/ig,
-			m,
-			scripts;
-
-		if (document.currentScript) {
-			fileSrc = document.currentScript.src;
-		} else {
-			scripts = document.getElementsByTagName('script');
-			fileSrc = scripts[scripts.length - 1].src;
-		}
-		m = reg.exec(fileSrc);
-		if (m && m[1]) {
-			return m[1];
-		} else {
-			throw new Error('Can\'t detect module name');
-		}
 	}
 
 	function require(name, callback) {
@@ -87,8 +66,12 @@ var define;
 					returnExport = registredModules[name].factory.apply(
 							currModule.exports, reqModules);
 				} else {
-					returnExport = registredModules[name].factory.call(
-							currModule.exports, require, currModule.exports, currModule);
+					if (typeof registredModules[name].factory === 'function') {
+						returnExport = registredModules[name].factory.call(
+								currModule.exports, require, currModule.exports, currModule);						
+					} else {
+						returnExport = registredModules[name].factory;
+					}
 				}
 				if (returnExport === undefined) {
 					modules[name] = currModule.exports;
@@ -115,7 +98,6 @@ var define;
 			if (typeof pseudoFactory === 'function') {
 				registredModules[moduleName].requireModules = factory;
 				registredModules[moduleName].factory = pseudoFactory;
-				require(moduleName);
 			}
 
 			if (moduleName.indexOf(APP) === 0) {
@@ -136,5 +118,3 @@ var define;
 		global.define.amd = {};// look alike AMD
 	}
 }(this));
-
-
