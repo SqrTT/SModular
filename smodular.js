@@ -1,7 +1,27 @@
+
+// IE8 fix
+if (!Array.prototype.indexOf) {
+	Array.prototype.indexOf = function (elt /*, from*/) {
+		var len = this.length >>> 0,
+			from = Number(arguments[1]) || 0;
+		
+		from = (from < 0) ? Math.ceil(from) : Math.floor(from);
+		if (from < 0) {
+			from += len;
+		}
+
+
+		for (; from < len; from++) {
+			if (from in this && this[from] === elt) {
+				return from;
+			}
+		}
+		return -1;
+	};
+}
 // define/require part
 (function (global, undefined) {
 	var modules = {},
-		document = global.document,
 		registredModules = {},
 		ASTERISK = '*',
 		APP = 'app.',
@@ -68,7 +88,7 @@
 				} else {
 					if (typeof registredModules[name].factory === 'function') {
 						returnExport = registredModules[name].factory.call(
-								currModule.exports, require, currModule.exports, currModule);						
+								currModule.exports, require, currModule.exports, currModule);
 					} else {
 						returnExport = registredModules[name].factory;
 					}
